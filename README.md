@@ -20,7 +20,7 @@ The latest version of the application uses R Version 4.0.3.
 Now, you can download the "app" directory and run the included "app" file in RStudio. 
 Set the "app" directory as your working directory. 
 
-Before executing the application, you have to install the required packages by esecuting this code:
+Before executing the application, you have to install the required packages by executing this code:
 
     install.packages(c("shiny", "purrr", "rhandsontable", "shinyBS"))
     
