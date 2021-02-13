@@ -12,7 +12,8 @@ Alternatively, you can specify your own predictors and criteria via the ‘Other
 
 ### Installation
 
-This Application is written in [Shiny](https://shiny.rstudio.com) and is work-in-progress. Therefore, it has not been published formally yet. 
+This Application is written in [R](https://www.r-project.org) using the [Shiny](https://shiny.rstudio.com) package and is work-in-progress. 
+Therefore, it has not been published formally yet. 
 
 To use the application you need to have [R](https://www.r-project.org) and [RStudio](https://www.r-project.org) installed.
 The latest version of the application uses R Version 4.0.3.
@@ -24,7 +25,13 @@ Before executing the application, you have to install the required packages by e
 
     install.packages(c("shiny", "purrr", "rhandsontable", "shinyBS"))
     
-Now you can run the app. 
+Now you can run the app.
+
+### Citing
+
+To cite this application please use:
+
+Failenschmid, J. I., Neumann, M., Meijer, R. R., & Niessen, A. S. M. (2021). *The predictive validity of weighted combinations of predictors and criteria* [Shiny app]. https://linktr.ee/Failenschmid_et_al_2021
 
 ### References 
 
