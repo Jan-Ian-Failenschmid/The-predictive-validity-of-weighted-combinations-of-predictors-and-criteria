@@ -12,7 +12,7 @@ background_predictors <- c("Cognitive Ability", "Conscientiousness", "Level 1 In
 
 background_criteria <- c("Job Performance")
 
-background_matrix <- matrix(c(1, .075, .055, .450, 0, .075, 1, .092, .267, 0, .055, .092, 1, .2, 0, .450, .267, .2, 1, 0, 0, 0, 0, 0, 0),
+background_matrix <- matrix(c(1, .075, .055, .450, 0, .075, 1, .092, .267, 0, .055, .092, 1, .2, 0, .450, .267, .2, 1, 0, 0, 0, 0, 0, 1),
                             nrow = 5, ncol = 5, 
                             dimnames = list(c(background_predictors, background_criteria, "Placeholder"),
                                             c(background_predictors, background_criteria, "Placeholder")))
@@ -76,6 +76,18 @@ mult_val_by_pred <- function(m, n, i, o, p) {
   
 }
 
+custom_names <- function(m, p, c, bp, bc) {
+  
+  pred_names1 <- p
+  pred_names1[!p %in% bp] <- "Placeholder"
+  
+  crit_names1 <- c
+  crit_names1[!c %in% bc] <- "Placeholder"
+  
+  corr_matrix <- m[c(pred_names1, crit_names1),c(pred_names1, crit_names1)]
+  dimnames(corr_matrix) <- list(c(p, c),c(p, c))
+  return(corr_matrix)
+}
 
 # Crates a UI interface that adjusts to the Size of it's content
 
@@ -350,49 +362,7 @@ server <- function(input, output) {
   
   crit_weights1 <- reactive(map_dbl(numb_crit1(), ~ input[[.x]]))
   
-  
-  # Takes the Input of the Predictor Names and splits it up in Names included in the Backgrond Matrix and in names not-included in the Background Matrix
-  
-  included_pred <- reactive(pred_names()[pred_names() %in% background_predictors])
-  
-  excluded_pred <- reactive(pred_names()[!pred_names() %in% background_predictors])
-  
-  
-  # Creates a vector of the "Replacement" Variables with the Length of the Names not-included in the Background Matrix
-  
-  length_excluded_pred <- reactive(length(excluded_pred()))
-  
-  replacement_pred <- reactive(rep("Placeholder", length_excluded_pred()))
-  
-  
-  # Takes the Input of the Criterion Names and splits it up in Names included in the Backgrond Matrix and in Names not-included in the Background Matrix
-  
-  included_crit <- reactive(crit_names()[crit_names() %in% background_criteria])
-  
-  excluded_crit <- reactive(crit_names()[!crit_names() %in% background_criteria])
-  
-  
-  # Creates a vector of the "Replacement" Variables with the Length of the Names not-included in the Background Matrix
-  
-  length_excluded_crit <- reactive(length(crit_names()[!crit_names() %in% background_criteria]))
-  
-  replacement_crit <- reactive(rep("Placeholder", length(crit_names()[!crit_names() %in% background_criteria])))
-  
-  
-  #Creates Multiple Vectors of Combinations of the Input Names to subset and name the Correlation Matrix
-  
-  dimnames_pred <- reactive(c(included_pred(), excluded_pred()))
-  
-  dim_names_sub_pred <- reactive(c(included_pred(), replacement_pred()))
-  
-  dimnames_crit <- reactive(c(included_crit(), excluded_crit()))
-  
-  dim_names_sub_crit <- reactive(c(included_crit(), replacement_crit()))
-  
-  
-  dim_names_sub <- reactive(c(dim_names_sub_pred(), dim_names_sub_crit()))
-  
-  dim_names <- reactive(c(dimnames_pred(), dimnames_crit()))
+  # Prints the Bacground Matrix for Inspection
 
   output$back_mat_inspec <- renderTable(background_matrix[c(background_predictors, background_criteria), c(background_predictors, background_criteria)],
                                         rownames = T, colnames = T, align = "c", hover = T)
@@ -400,11 +370,7 @@ server <- function(input, output) {
   
   #Creates a Subset of the Background Matrix based on the Input and Renders it as a Handsontable while observing the Changes to it
   
-  corr_matrix_values <- reactive(as.numeric(background_matrix[dim_names_sub(), dim_names_sub()]))
-  
-  
-  corr_matrix1 <- reactive(matrix(corr_matrix_values(), nrow = (input$n1+input$n2), ncol = (input$n1+input$n2), 
-                                  dimnames = list(dim_names(), dim_names())))
+  corr_matrix1 <- reactive(custom_names(background_matrix, pred_names(), crit_names(), background_predictors, background_criteria))
   
   output$hot_render <- renderRHandsontable(rhandsontable(corr_matrix1(), rowHeaderWidth = 150) %>%
                                              hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE) %>%
@@ -425,14 +391,11 @@ server <- function(input, output) {
                                              hot_table(highlightCol = TRUE, highlightRow = TRUE))
   
   corr_matrix2 <- reactive(matrix(hot_to_r(input$hot_render), nrow = (input$n1 + input$n2), ncol = (input$n1 + input$n2), 
-                                dimnames = list(dim_names(), dim_names())))
-  
-  corr_matrix3 <-reactive(corr_matrix2()[c(pred_names(),crit_names()),c(pred_names(),crit_names())])
-  
+                                dimnames = list(c(pred_names(), crit_names()), c(pred_names(), crit_names()))))
   
   # Makes the matrix diagonally symmetrical 
   
-  corr_matrix <- reactive(symmetrize(corr_matrix3()))
+  corr_matrix <- reactive(symmetrize(corr_matrix2()))
   
   
   #Inputs the criterion weights and the test weights, transforms them into a matrix
